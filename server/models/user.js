@@ -82,7 +82,10 @@ UserSchema.statics.findByToken = function (token) {
 UserSchema.pre('save', function (next) {
   var user = this;
 
+  // isModified will return true if password was modified and false if it wasnt
+  // checks if password was modified
   if (user.isModified('password')) {
+    // hashing the password
      bcrypt.genSalt(10, (err, salt) => {
        bcrypt.hash(user.password, salt, (err, hash) => {
          user.password = hash;
