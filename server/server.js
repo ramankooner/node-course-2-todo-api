@@ -102,6 +102,20 @@ app.patch('/todos/:id', (req, res) => {
   });
 });
 
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body); // this will contain the email and password bc this is what we pick above
+
+  user.save().then(() => { // saves document to database
+    return user.generateAuthToken();
+  }).then((token) => {
+    // this user variable comes from the var user = new User(body) above
+    res.header('x-auth', token).send(user); // x- makes a custom header
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
 app.listen(port, () => {
   console.log(`Started up at port ${port}`);
 });
