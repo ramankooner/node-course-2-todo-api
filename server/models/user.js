@@ -32,6 +32,8 @@ var UserSchema = new mongoose.Schema({
   }]
 });
 
+// This method is used so that we only get back the user id and email when we post a user in postman
+// this will block the token object and password when we post a uesr
 UserSchema.methods.toJSON = function () {
   var user = this;
   var userObject = user.toObject();
@@ -51,6 +53,25 @@ UserSchema.methods.generateAuthToken = function () {
 
   return user.save().then(() => {
     return token;
+  });
+};
+
+// everything we add on to it turns into a model method
+UserSchema.statics.findByToken = function (token) {
+  // model methods get called with the model
+  var User = this;
+  var decoded; // stores decoded jwt values
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+    return Promise.reject();
+  }
+
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token, // lets us query the value passed in by findByToken
+    'tokens.access': 'auth'
   });
 };
 
